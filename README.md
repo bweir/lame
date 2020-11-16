@@ -10,8 +10,13 @@ I'd like to make a Spin compiler. Why?
 
 - A documented lexer/parser would enable many kinds of analyses
 
-https://blog.gopheracademy.com/advent-2014/parsers-lexers/
-https://github.com/benbjohnson/sql-parser/blob/master/scanner.go
+- This gives me an excuse to learn Go
+
+Notes:
+
+- https://blog.gopheracademy.com/advent-2014/parsers-lexers/
+
+- https://github.com/benbjohnson/sql-parser/blob/master/scanner.go
 
 ## Usage
 
