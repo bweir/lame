@@ -8,48 +8,6 @@ import (
 	"github.com/bweir/lame/token"
 )
 
-func (s *Scanner) getSpace() (buf bytes.Buffer) {
-	buf.WriteRune(s.read())
-
-	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if !isSpace(ch) {
-			s.unread()
-			break
-		} else {
-			buf.WriteRune(ch)
-		}
-	}
-
-	// fmt.Println("space", buf.String())
-
-	// for i := 0; i < buf.Len(); i++ {
-	// 	s.unread()
-	// }
-
-	// fmt.Printf("BUFFER '%s'", buf.String())
-
-	return buf
-}
-
-func (s *Scanner) scanSpace() (tok token.Token) {
-
-	buf := s.getSpace()
-	// for i := 0; i < buf.Len(); i++ {
-	// 	fmt.Println(buf.String())
-	// 	s.read()
-	// }
-	return s.makeToken(token.NULL, buf.String())
-}
-
-func (s *Scanner) getCurrentIndent() (currentIndent int) {
-	for e := s.indent.Front(); e != nil; e = e.Next() {
-		currentIndent += e.Value.(int)
-	}
-	return currentIndent
-}
-
 func printList(li *list.List) {
 	for e := li.Front(); e != nil; e = e.Next() {
 		fmt.Printf("%d, ", e.Value)
@@ -62,10 +20,19 @@ func (s *Scanner) scanIndentLevel() (tok token.Token) {
 	if ch == eof {
 		return s.makeToken(token.EOF, "")
 	}
+
 	var buf bytes.Buffer
-	if isSpace(ch) {
-		s.unread()
-		buf = s.getSpace()
+	buf.WriteRune(s.read())
+
+	for {
+		if ch := s.read(); ch == eof {
+			break
+		} else if !isSpace(ch) {
+			s.unread()
+			break
+		} else {
+			buf.WriteRune(ch)
+		}
 	}
 
 	fmt.Printf("BFF '%s'\n", buf.String())

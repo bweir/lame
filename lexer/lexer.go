@@ -128,7 +128,9 @@ func (s *Scanner) Scan() (tok token.Token) {
 		} else if isSpace(ch) {
 			// fmt.Println("go space", ch)
 			s.unread()
-			s.scanSpace()
+			if tok := s.scanSpace(); tok.Type == token.EOF {
+				return tok
+			}
 		} else if isIdentifier(ch) {
 			// fmt.Println("go identifier", ch)
 			s.unread()
@@ -166,6 +168,24 @@ func (s *Scanner) Scan() (tok token.Token) {
 		}
 		ch = s.read()
 	}
+}
+
+func (s *Scanner) scanSpace() (tok token.Token) {
+	var buf bytes.Buffer
+	buf.WriteRune(s.read())
+
+	for {
+		if ch := s.read(); ch == eof {
+			return s.makeToken(token.EOF, "")
+		} else if !isSpace(ch) {
+			s.unread()
+			break
+		} else {
+			buf.WriteRune(ch)
+		}
+	}
+
+	return s.makeToken(token.NULL, buf.String())
 }
 
 func (s *Scanner) scanNumber() (tok token.Token) {
