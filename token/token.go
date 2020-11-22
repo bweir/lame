@@ -14,11 +14,9 @@ type Token struct {
 
 const (
 	// Special tokens
-	ILLEGAL = "ILLEGAL"
-
-	EOF     = "EOF"
-	SPACE   = "SPACE"
-	NEWLINE = "NEWLINE" // \n
+	ILLEGAL = "ILLEGAL" // invalid character
+	NULL    = "NULL"    // do no action
+	EOF     = "EOF"     // end of file
 
 	// Literals
 	IDENTIFIER  = "IDENTIFIER" // fields, table_name

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"container/list"
-	"fmt"
 	"io"
 
 	"github.com/bweir/lame/token"
@@ -48,26 +47,23 @@ func isCommentEnd(ch rune) bool {
 }
 
 type Scanner struct {
-	r           *bufio.Reader
-	state       state.State
-	indent      *list.List
-	line_start  bool
-	line        int
-	column      int
-	last_char   rune
-	last_column int
+	r             *bufio.Reader
+	state         state.State
+	indent        *list.List
+	initialIndent int
+	blockStart    bool
+	lineStart     bool
+	line          int
+	column        int
+	lastChar      rune
+	lastColumn    int
 }
 
 func NewScanner(r io.Reader) *Scanner {
 	return &Scanner{
-		r:           bufio.NewReader(r),
-		state:       state.DEFAULT,
-		indent:      list.New(),
-		line_start:  false,
-		line:        0,
-		column:      0,
-		last_char:   0,
-		last_column: 0,
+		r:      bufio.NewReader(r),
+		state:  state.DEFAULT,
+		indent: list.New(),
 	}
 }
 
@@ -75,32 +71,28 @@ func NewScanner(r io.Reader) *Scanner {
 // Returns the rune(0) if an error occurs (or io.EOF is returned).
 func (s *Scanner) read() rune {
 	ch, _, err := s.r.ReadRune()
+	// fmt.Printf("reading '%s'\n", string(ch))
 	if err != nil {
 		return eof
 	}
-	if s.last_char == '\n' {
-		s.last_column = s.column
+	if s.lastChar == '\n' {
+		s.lastColumn = s.column
 		s.column = 0
 		s.line++
-		if s.state == state.FUNCTION {
-			s.line_start = true
-		}
 	} else {
 		s.column++
 	}
 
-	s.last_char = ch
+	s.lastChar = ch
 	return ch
 }
 
 func (s *Scanner) unread() {
 	_ = s.r.UnreadRune()
-	if s.last_char == '\n' {
+	// fmt.Printf("unreading '%s'\n", string(s.lastChar))
+	if s.lastChar == '\n' {
 		s.line--
-		s.column = s.last_column
-		if s.state == state.FUNCTION {
-			s.line_start = false
-		}
+		s.column = s.lastColumn
 	} else {
 		s.column--
 	}
@@ -118,108 +110,62 @@ func (s *Scanner) makeToken(tok token.Type, lit string) token.Token {
 
 func (s *Scanner) Scan() (tok token.Token) {
 	ch := s.read()
-
-	if isSpace(ch) {
-		if s.line_start {
-			s.unread()
-			s.line_start = false
-			return s.scanIndent()
-		} else {
-			s.unread()
-			return s.scanSpace()
-		}
-	}
-
-	s.line_start = false
-
-	if isIdentifier(ch) {
-		s.unread()
-		return s.scanIdentifier()
-	} else if isDigit(ch) {
-		s.unread()
-		return s.scanNumber()
-	} else if isLineCommentStart(ch) {
-		ch := s.read()
+	for {
 		if ch == eof {
 			return s.makeToken(token.EOF, "")
+		} else if isNewline(ch) {
+			// fmt.Println("go newline", ch)
+			//s.lineStart = false
+			//} else if s.lineStart {
+			//	s.unread()
+			//	s.scanSpace()
+			// if s.state == state.FUNCTION {
+			// 	tok = s.scanIndentLevel()
+			// 	if tok.Type != token.NULL {
+			// 		return tok
+			// 	}
+			// }
+		} else if isSpace(ch) {
+			// fmt.Println("go space", ch)
+			s.unread()
+			s.scanSpace()
+		} else if isIdentifier(ch) {
+			// fmt.Println("go identifier", ch)
+			s.unread()
+			return s.scanIdentifier()
+		} else if isDigit(ch) {
+			// fmt.Println("go digit", ch)
+			s.unread()
+			return s.scanNumber()
 		} else if isLineCommentStart(ch) {
-			return s.scanLineDocComment()
-		} else {
-			s.unread()
-			return s.scanLineComment()
-		}
-	} else if isCommentStart(ch) {
-		ch := s.read()
-		if ch == eof {
-			return s.makeToken(token.EOF, "")
+			// fmt.Println("go line comment", ch)
+			ch = s.read()
+			if ch == eof {
+				return s.makeToken(token.EOF, "")
+			} else if isLineCommentStart(ch) {
+				return s.scanLineDocComment()
+			} else {
+				s.unread()
+				return s.scanLineComment()
+			}
 		} else if isCommentStart(ch) {
-			return s.scanDocComment()
+			// fmt.Println("go comment", ch)
+			ch = s.read()
+			if ch == eof {
+				return s.makeToken(token.EOF, "")
+			} else if isCommentStart(ch) {
+				return s.scanDocComment()
+			} else {
+				s.unread()
+				return s.scanComment()
+			}
 		} else {
+			// fmt.Println("go operator", ch)
 			s.unread()
-			return s.scanComment()
+			return s.scanOperator()
 		}
+		ch = s.read()
 	}
-
-	s.unread()
-	return s.scanOperator()
-}
-
-func (s *Scanner) scanSpace() (tok token.Token) {
-	var buf bytes.Buffer
-	buf.WriteRune(s.read())
-
-	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if !isSpace(ch) {
-			s.unread()
-			break
-		} else {
-			buf.WriteRune(ch)
-		}
-	}
-
-	return s.makeToken(token.SPACE, buf.String())
-}
-
-func (s *Scanner) scanIndent() (tok token.Token) {
-	var buf bytes.Buffer
-	buf.WriteRune(s.read())
-
-	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if !isSpace(ch) {
-			s.unread()
-			break
-		} else {
-			buf.WriteRune(ch)
-		}
-	}
-
-	for e := s.indent.Front(); e != nil; e = e.Next() {
-		fmt.Printf("%d ", e.Value)
-	}
-
-	// add up indents
-	current_indent := 0
-	for e := s.indent.Front(); e != nil; e = e.Next() {
-		current_indent += e.Value.(int)
-	}
-
-	new_indent := len(buf.String())
-	// total += len(buf.String())
-
-	if new_indent > current_indent {
-		// indenting
-		s.indent.PushBack(new_indent)
-		return s.makeToken(token.INDENT, "-->")
-	} else if new_indent < current_indent {
-		// dedenting
-		s.indent.Remove(s.indent.Back())
-		return s.makeToken(token.DEDENT, "<--")
-	}
-	return s.makeToken(token.ILLEGAL, buf.String())
 }
 
 func (s *Scanner) scanNumber() (tok token.Token) {

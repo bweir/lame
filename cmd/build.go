@@ -32,17 +32,23 @@ var buildCmd = &cobra.Command{
 		scanner := lexer.NewScanner(strings.NewReader(string(text)))
 		var tok token.Token
 
+		indent := 0
 		for tok.Type != token.EOF {
 			tok = scanner.Scan()
 			if tok.Type == token.PRI || tok.Type == token.PUB {
 				fmt.Printf("\n")
+			} else if tok.Type == token.INDENT {
+				indent++
+			} else if tok.Type == token.DEDENT {
+				indent--
 			}
 			fmt.Printf(
-				"%s %s(%d,%d): '%s'\n",
+				"%s %12s(%3d, %3d): %s'%s'\n",
 				tok.State[0:2],
 				tok.Type,
 				tok.Line+1,
 				tok.Column+1,
+				strings.Repeat("  ", indent),
 				tok.Literal,
 			)
 			if tok.Type == token.ILLEGAL {

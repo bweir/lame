@@ -8,8 +8,6 @@ func (s *Scanner) scanOperator() (tok token.Token) {
 	switch ch {
 	case eof:
 		return s.makeToken(token.EOF, "")
-	case '\n':
-		return s.makeToken(token.NEWLINE, string(ch))
 	case ',':
 		return s.makeToken(token.COMMA, string(ch))
 	case '=':

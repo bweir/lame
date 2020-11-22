@@ -29,21 +29,27 @@ func (s *Scanner) scanIdentifier() (tok token.Token) {
 	// Blocks
 	case "CON":
 		s.state = state.CONSTANT
+		s.blockStart = true
 		return s.makeToken(token.CON, buf.String())
 	case "DAT":
 		s.state = state.DATA
+		s.blockStart = true
 		return s.makeToken(token.DAT, buf.String())
 	case "OBJ":
 		s.state = state.OBJECT
+		s.blockStart = true
 		return s.makeToken(token.OBJ, buf.String())
 	case "PRI":
 		s.state = state.FUNCTION
+		s.blockStart = true
 		return s.makeToken(token.PRI, buf.String())
 	case "PUB":
 		s.state = state.FUNCTION
+		s.blockStart = true
 		return s.makeToken(token.PUB, buf.String())
 	case "VAR":
 		s.state = state.VARIABLE
+		s.blockStart = true
 		return s.makeToken(token.VAR, buf.String())
 
 	// Constants
@@ -240,11 +246,10 @@ func (s *Scanner) scanIdentifier() (tok token.Token) {
 	case "NOT":
 		return s.makeToken(token.NOT, buf.String())
 	case "AND":
-		return s.makeToken(token.NOT, buf.String())
+		return s.makeToken(token.AND, buf.String())
 	case "OR":
-		return s.makeToken(token.NOT, buf.String())
+		return s.makeToken(token.OR, buf.String())
 	}
 
-	// Otherwise return s.makeToken(as a regular identifier.
 	return s.makeToken(token.IDENTIFIER, buf.String())
 }
