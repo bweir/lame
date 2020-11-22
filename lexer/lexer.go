@@ -5,10 +5,28 @@ import (
 	"bytes"
 	"io"
 	"strings"
+
+	"github.com/bweir/lame/token"
 )
 
-func isBlock(tok Token) bool {
-	return tok >= CON && tok <= VAR
+var eof = rune(0)
+
+func isBlock(tok token.Type) bool {
+	switch tok {
+	case token.CON:
+		fallthrough
+	case token.DAT:
+		fallthrough
+	case token.OBJ:
+		fallthrough
+	case token.PRI:
+		fallthrough
+	case token.PUB:
+		fallthrough
+	case token.VAR:
+		return true
+	}
+	return false
 }
 
 func isSpace(ch rune) bool {
@@ -44,11 +62,13 @@ func isCommentEnd(ch rune) bool {
 }
 
 type Scanner struct {
-	r *bufio.Reader
+	r      *bufio.Reader
+	line   int
+	column int
 }
 
 func NewScanner(r io.Reader) *Scanner {
-	return &Scanner{r: bufio.NewReader(r)}
+	return &Scanner{r: bufio.NewReader(r), line: 0, column: 0}
 }
 
 // read reads the next rune from the bufferred reader.
@@ -61,9 +81,20 @@ func (s *Scanner) read() rune {
 	return ch
 }
 
-func (s *Scanner) unread() { _ = s.r.UnreadRune() }
+func (s *Scanner) unread() {
+	_ = s.r.UnreadRune()
+}
 
-func (s *Scanner) Scan() (tok Token, lit string) {
+func (s *Scanner) makeToken(tok token.Type, lit string) token.Token {
+	return token.Token{
+		Type:    tok,
+		Literal: lit,
+		Line:    s.line,
+		Column:  s.column,
+	}
+}
+
+func (s *Scanner) Scan() (tok token.Token) {
 	ch := s.read()
 
 	if isSpace(ch) {
@@ -78,7 +109,7 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	} else if isLineCommentStart(ch) {
 		ch := s.read()
 		if ch == eof {
-			return EOF, ""
+			return s.makeToken(token.EOF, "")
 		} else if isLineCommentStart(ch) {
 			return s.scanLineDocComment()
 		} else {
@@ -88,7 +119,7 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	} else if isCommentStart(ch) {
 		ch := s.read()
 		if ch == eof {
-			return EOF, ""
+			return s.makeToken(token.EOF, "")
 		} else if isCommentStart(ch) {
 			return s.scanDocComment()
 		} else {
@@ -99,65 +130,65 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 
 	switch ch {
 	case eof:
-		return EOF, ""
+		return s.makeToken(token.EOF, "")
 	case '\n':
-		return NEWLINE, string(ch)
+		return s.makeToken(token.NEWLINE, string(ch))
 	case ',':
-		return COMMA, string(ch)
+		return s.makeToken(token.COMMA, string(ch))
 	case '=':
-		return EQUAL, string(ch)
+		return s.makeToken(token.EQUAL, string(ch))
 
 	case '<':
-		return LESS_THAN, string(ch)
+		return s.makeToken(token.LESS_THAN, string(ch))
 	case '>':
-		return GREATER_THAN, string(ch)
+		return s.makeToken(token.GREATER_THAN, string(ch))
 	case '~':
-		return TILDE, string(ch)
+		return s.makeToken(token.TILDE, string(ch))
 	case '&':
-		return AMPERSAND, string(ch)
+		return s.makeToken(token.AMPERSAND, string(ch))
 
 	case ':':
-		return COLON, string(ch)
+		return s.makeToken(token.COLON, string(ch))
 	case '"':
-		return QUOTE_DOUBLE, string(ch)
+		return s.makeToken(token.QUOTE_DOUBLE, string(ch))
 	case '.':
-		return DOT, string(ch)
+		return s.makeToken(token.DOT, string(ch))
 	case '|':
-		return PIPE, string(ch)
+		return s.makeToken(token.PIPE, string(ch))
 	case '!':
-		return EXCLAMATION_MARK, string(ch)
+		return s.makeToken(token.EXCLAMATION_MARK, string(ch))
 	case '@':
-		return AT, string(ch)
+		return s.makeToken(token.AT, string(ch))
 	case '#':
-		return POUND, string(ch)
+		return s.makeToken(token.POUND, string(ch))
 	case '$':
-		return DOLLAR, string(ch)
+		return s.makeToken(token.DOLLAR, string(ch))
 	case '%':
-		return PERCENT, string(ch)
+		return s.makeToken(token.PERCENT, string(ch))
 
 	case '+':
-		return PLUS, string(ch)
+		return s.makeToken(token.PLUS, string(ch))
 	case '-':
-		return MINUS, string(ch)
+		return s.makeToken(token.MINUS, string(ch))
 	case '/':
-		return SLASH, string(ch)
+		return s.makeToken(token.SLASH, string(ch))
 	case '*':
-		return ASTERISK, string(ch)
+		return s.makeToken(token.ASTERISK, string(ch))
 
 	case '(':
-		return PAREN_OPEN, string(ch)
+		return s.makeToken(token.PAREN_OPEN, string(ch))
 	case ')':
-		return PAREN_CLOSE, string(ch)
+		return s.makeToken(token.PAREN_CLOSE, string(ch))
 	case '[':
-		return BRACKET_OPEN, string(ch)
+		return s.makeToken(token.BRACKET_OPEN, string(ch))
 	case ']':
-		return BRACKET_CLOSE, string(ch)
+		return s.makeToken(token.BRACKET_CLOSE, string(ch))
 	}
 
-	return ILLEGAL, string(ch)
+	return s.makeToken(token.ILLEGAL, string(ch))
 }
 
-func (s *Scanner) scanSpace() (tok Token, lit string) {
+func (s *Scanner) scanSpace() (tok token.Token) {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -172,15 +203,16 @@ func (s *Scanner) scanSpace() (tok Token, lit string) {
 		}
 	}
 
-	return WS, buf.String()
+	return s.makeToken(token.WS, buf.String())
 }
 
-func (s *Scanner) scanLineDocComment() (tok Token, lit string) {
-	_, lit = s.scanLineComment()
-	return DOC_COMMENT, lit
+func (s *Scanner) scanLineDocComment() (tok token.Token) {
+	tok = s.scanLineComment()
+	tok.Type = token.DOC_COMMENT
+	return tok
 }
 
-func (s *Scanner) scanLineComment() (tok Token, lit string) {
+func (s *Scanner) scanLineComment() (tok token.Token) {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -192,18 +224,19 @@ func (s *Scanner) scanLineComment() (tok Token, lit string) {
 		}
 	}
 
-	return COMMENT, buf.String()
+	return s.makeToken(token.COMMENT, buf.String())
 }
 
-func (s *Scanner) scanDocComment() (tok Token, lit string) {
-	_, lit = s.scanComment()
+func (s *Scanner) scanDocComment() (tok token.Token) {
+	tok = s.scanComment()
 	if ch := s.read(); !isCommentEnd(ch) {
-		return ILLEGAL, string(ch)
+		return s.makeToken(token.ILLEGAL, string(ch))
 	}
-	return DOC_COMMENT, lit
+	tok.Type = token.DOC_COMMENT
+	return tok
 }
 
-func (s *Scanner) scanComment() (tok Token, lit string) {
+func (s *Scanner) scanComment() (tok token.Token) {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -215,10 +248,10 @@ func (s *Scanner) scanComment() (tok Token, lit string) {
 		}
 	}
 
-	return COMMENT, buf.String()
+	return s.makeToken(token.COMMENT, buf.String())
 }
 
-func (s *Scanner) scanNumber() (tok Token, lit string) {
+func (s *Scanner) scanNumber() (tok token.Token) {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -233,10 +266,10 @@ func (s *Scanner) scanNumber() (tok Token, lit string) {
 		}
 	}
 
-	return NUMBER, buf.String()
+	return s.makeToken(token.NUMBER, buf.String())
 }
 
-func (s *Scanner) scanIdentifier() (tok Token, lit string) {
+func (s *Scanner) scanIdentifier() (tok token.Token) {
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
 
@@ -256,209 +289,209 @@ func (s *Scanner) scanIdentifier() (tok Token, lit string) {
 
 	// Blocks
 	case "CON":
-		return CON, buf.String()
+		return s.makeToken(token.CON, buf.String())
 	case "DAT":
-		return DAT, buf.String()
+		return s.makeToken(token.DAT, buf.String())
 	case "OBJ":
-		return OBJ, buf.String()
+		return s.makeToken(token.OBJ, buf.String())
 	case "PRI":
-		return PRI, buf.String()
+		return s.makeToken(token.PRI, buf.String())
 	case "PUB":
-		return PUB, buf.String()
+		return s.makeToken(token.PUB, buf.String())
 	case "VAR":
-		return VAR, buf.String()
+		return s.makeToken(token.VAR, buf.String())
 
 	// Constants
 	case "TRUE":
-		return TRUE, buf.String()
+		return s.makeToken(token.TRUE, buf.String())
 	case "FALSE":
-		return FALSE, buf.String()
+		return s.makeToken(token.FALSE, buf.String())
 	case "POSX":
-		return POSX, buf.String()
+		return s.makeToken(token.POSX, buf.String())
 	case "NEGX":
-		return NEGX, buf.String()
+		return s.makeToken(token.NEGX, buf.String())
 	case "PI":
-		return PI, buf.String()
+		return s.makeToken(token.PI, buf.String())
 	case "RCFAST":
-		return RCFAST, buf.String()
+		return s.makeToken(token.RCFAST, buf.String())
 	case "RCSLOW":
-		return RCSLOW, buf.String()
+		return s.makeToken(token.RCSLOW, buf.String())
 	case "XINPUT":
-		return XINPUT, buf.String()
+		return s.makeToken(token.XINPUT, buf.String())
 	case "XTAL1":
-		return XTAL1, buf.String()
+		return s.makeToken(token.XTAL1, buf.String())
 	case "XTAL2":
-		return XTAL2, buf.String()
+		return s.makeToken(token.XTAL2, buf.String())
 	case "XTAL3":
-		return XTAL3, buf.String()
+		return s.makeToken(token.XTAL3, buf.String())
 	case "PLL1X":
-		return PLL1X, buf.String()
+		return s.makeToken(token.PLL1X, buf.String())
 	case "PLL2X":
-		return PLL2X, buf.String()
+		return s.makeToken(token.PLL2X, buf.String())
 	case "PLL4X":
-		return PLL4X, buf.String()
+		return s.makeToken(token.PLL4X, buf.String())
 	case "PLL8X":
-		return PLL8X, buf.String()
+		return s.makeToken(token.PLL8X, buf.String())
 	case "PLL16X":
-		return PLL16X, buf.String()
+		return s.makeToken(token.PLL16X, buf.String())
 
 	// Variables
 	case "RESULT":
-		return RESULT, buf.String()
+		return s.makeToken(token.RESULT, buf.String())
 
 	// Flow Control
 	case "ABORT":
-		return ABORT, buf.String()
+		return s.makeToken(token.ABORT, buf.String())
 	case "CASE":
-		return CASE, buf.String()
+		return s.makeToken(token.CASE, buf.String())
 	case "IF":
-		return IF, buf.String()
+		return s.makeToken(token.IF, buf.String())
 	case "IFNOT":
-		return IFNOT, buf.String()
+		return s.makeToken(token.IFNOT, buf.String())
 	case "NEXT":
-		return NEXT, buf.String()
+		return s.makeToken(token.NEXT, buf.String())
 	case "QUIT":
-		return QUIT, buf.String()
+		return s.makeToken(token.QUIT, buf.String())
 	case "REPEAT":
-		return REPEAT, buf.String()
+		return s.makeToken(token.REPEAT, buf.String())
 	case "RETURN":
-		return RETURN, buf.String()
+		return s.makeToken(token.RETURN, buf.String())
 
 	// Memory
 	case "BYTE":
-		return BYTE, buf.String()
+		return s.makeToken(token.BYTE, buf.String())
 	case "WORD":
-		return WORD, buf.String()
+		return s.makeToken(token.WORD, buf.String())
 	case "LONG":
-		return LONG, buf.String()
+		return s.makeToken(token.LONG, buf.String())
 	case "BYTEFILL":
-		return BYTEFILL, buf.String()
+		return s.makeToken(token.BYTEFILL, buf.String())
 	case "WORDFILL":
-		return WORDFILL, buf.String()
+		return s.makeToken(token.WORDFILL, buf.String())
 	case "LONGFILL":
-		return LONGFILL, buf.String()
+		return s.makeToken(token.LONGFILL, buf.String())
 	case "BYTEMOVE":
-		return BYTEMOVE, buf.String()
+		return s.makeToken(token.BYTEMOVE, buf.String())
 	case "WORDMOVE":
-		return WORDMOVE, buf.String()
+		return s.makeToken(token.WORDMOVE, buf.String())
 	case "LONGMOVE":
-		return LONGMOVE, buf.String()
+		return s.makeToken(token.LONGMOVE, buf.String())
 	case "LOOKUP":
-		return LOOKUP, buf.String()
+		return s.makeToken(token.LOOKUP, buf.String())
 	case "LOOKUPZ":
-		return LOOKUPZ, buf.String()
+		return s.makeToken(token.LOOKUPZ, buf.String())
 	case "LOOKDOWN":
-		return LOOKDOWN, buf.String()
+		return s.makeToken(token.LOOKDOWN, buf.String())
 	case "LOOKDOWNZ":
-		return LOOKDOWNZ, buf.String()
+		return s.makeToken(token.LOOKDOWNZ, buf.String())
 	case "STRSIZE":
-		return STRSIZE, buf.String()
+		return s.makeToken(token.STRSIZE, buf.String())
 	case "STRCOMP":
-		return STRCOMP, buf.String()
+		return s.makeToken(token.STRCOMP, buf.String())
 
 	// Directives
 	case "STRING":
-		return STRING, buf.String()
+		return s.makeToken(token.STRING, buf.String())
 	case "CONSTANT":
-		return CONSTANT, buf.String()
+		return s.makeToken(token.CONSTANT, buf.String())
 	case "FLOAT":
-		return FLOAT, buf.String()
+		return s.makeToken(token.FLOAT, buf.String())
 	case "ROUND":
-		return ROUND, buf.String()
+		return s.makeToken(token.ROUND, buf.String())
 	case "TRUNC":
-		return TRUNC, buf.String()
+		return s.makeToken(token.TRUNC, buf.String())
 	case "FILE":
-		return FILE, buf.String()
+		return s.makeToken(token.FILE, buf.String())
 
 	// Locks
 	case "LOCKNEW":
-		return LOCKNEW, buf.String()
+		return s.makeToken(token.LOCKNEW, buf.String())
 	case "LOCKRET":
-		return LOCKRET, buf.String()
+		return s.makeToken(token.LOCKRET, buf.String())
 	case "LOCKCLR":
-		return LOCKCLR, buf.String()
+		return s.makeToken(token.LOCKCLR, buf.String())
 	case "LOCKSET":
-		return LOCKSET, buf.String()
+		return s.makeToken(token.LOCKSET, buf.String())
 
 	// Chip Config
 	case "CHIPVER":
-		return CHIPVER, buf.String()
+		return s.makeToken(token.CHIPVER, buf.String())
 	case "CLKMODE":
-		return CLKMODE, buf.String()
-	case "_CLKMODE":
-		return _CLKMODE, buf.String()
+		return s.makeToken(token.CLKMODE, buf.String())
 	case "CLKFREQ":
-		return CLKFREQ, buf.String()
-	case "_CLKFREQ":
-		return _CLKFREQ, buf.String()
+		return s.makeToken(token.CLKFREQ, buf.String())
 	case "CLKSET":
-		return CLKSET, buf.String()
+		return s.makeToken(token.CLKSET, buf.String())
+	case "_CLKMODE":
+		return s.makeToken(token.P_CLKMODE, buf.String())
+	case "_CLKFREQ":
+		return s.makeToken(token.P_CLKFREQ, buf.String())
 	case "_XINFREQ":
-		return _XINFREQ, buf.String()
+		return s.makeToken(token.P_XINFREQ, buf.String())
 	case "_STACK":
-		return _STACK, buf.String()
+		return s.makeToken(token.P_STACK, buf.String())
 	case "_FREE":
-		return _FREE, buf.String()
+		return s.makeToken(token.P_FREE, buf.String())
 
 	// Registers
 	case "CNT":
-		return CNT, buf.String()
+		return s.makeToken(token.CNT, buf.String())
 	case "CTRA":
-		return CTRA, buf.String()
+		return s.makeToken(token.CTRA, buf.String())
 	case "CTRB":
-		return CTRB, buf.String()
+		return s.makeToken(token.CTRB, buf.String())
 	case "DIRA":
-		return DIRA, buf.String()
+		return s.makeToken(token.DIRA, buf.String())
 	case "DIRB":
-		return DIRB, buf.String()
+		return s.makeToken(token.DIRB, buf.String())
 	case "INA":
-		return INA, buf.String()
+		return s.makeToken(token.INA, buf.String())
 	case "INB":
-		return INB, buf.String()
+		return s.makeToken(token.INB, buf.String())
 	case "OUTA":
-		return OUTA, buf.String()
+		return s.makeToken(token.OUTA, buf.String())
 	case "OUTB":
-		return OUTB, buf.String()
+		return s.makeToken(token.OUTB, buf.String())
 	case "FRQA":
-		return FRQA, buf.String()
+		return s.makeToken(token.FRQA, buf.String())
 	case "FRQB":
-		return FRQB, buf.String()
+		return s.makeToken(token.FRQB, buf.String())
 	case "PHSA":
-		return PHSA, buf.String()
+		return s.makeToken(token.PHSA, buf.String())
 	case "PHSB":
-		return PHSB, buf.String()
+		return s.makeToken(token.PHSB, buf.String())
 	case "VCFG":
-		return VCFG, buf.String()
+		return s.makeToken(token.VCFG, buf.String())
 	case "VSCL":
-		return VSCL, buf.String()
+		return s.makeToken(token.VSCL, buf.String())
 	case "PAR":
-		return PAR, buf.String()
+		return s.makeToken(token.PAR, buf.String())
 	case "SPR":
-		return SPR, buf.String()
+		return s.makeToken(token.SPR, buf.String())
 
 	// Process Control
 	case "WAITCNT":
-		return WAITCNT, buf.String()
+		return s.makeToken(token.WAITCNT, buf.String())
 	case "WAITPEQ":
-		return WAITPEQ, buf.String()
+		return s.makeToken(token.WAITPEQ, buf.String())
 	case "WAITPNE":
-		return WAITPNE, buf.String()
+		return s.makeToken(token.WAITPNE, buf.String())
 	case "WAITVID":
-		return WAITVID, buf.String()
+		return s.makeToken(token.WAITVID, buf.String())
 
 	// Cog Control
 	case "COGID":
-		return COGID, buf.String()
+		return s.makeToken(token.COGID, buf.String())
 	case "COGNEW":
-		return COGNEW, buf.String()
+		return s.makeToken(token.COGNEW, buf.String())
 	case "COGINIT":
-		return COGINIT, buf.String()
+		return s.makeToken(token.COGINIT, buf.String())
 	case "COGSTOP":
-		return COGSTOP, buf.String()
+		return s.makeToken(token.COGSTOP, buf.String())
 	case "REBOOT":
-		return REBOOT, buf.String()
+		return s.makeToken(token.REBOOT, buf.String())
 	}
 
-	// Otherwise return as a regular identifier.
-	return IDENTIFIER, buf.String()
+	// Otherwise return s.makeToken(as a regular identifier.
+	return s.makeToken(token.IDENTIFIER, buf.String())
 }

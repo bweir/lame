@@ -15,6 +15,6 @@ var fmtCmd = &cobra.Command{
 	Short: "Format Spin code",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("formatting ...")
+		fmt.Printf("formatting %s ...", args)
 	},
 }

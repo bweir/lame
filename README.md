@@ -1,6 +1,6 @@
-# spin CLI
+# lame compiler suite
 
-I'd like to make a Spin compiler. Why?
+I'm making a Spin compiler. Why?
 
 - Spin is an interesting language for its limitations
 
@@ -21,7 +21,7 @@ Notes:
 ## Usage
 
 ```
-spin COMMAND [OPTIONS]
+lame COMMAND [OPTIONS]
 ```
 
 ## Goals
@@ -29,42 +29,44 @@ spin COMMAND [OPTIONS]
 - **To compile Spin objects**:
 
   ```
-  spin build
+  lame build
   ```
 
 - **To load Spin objects over serial**:
 
   ```
-  spin load
+  lame load
   ```
 
 - To enable a live build/load/debug cycle over serial
 
   ```
-  spin dev
+  lame dev
   ```
 
 - To reformat Spin code accurately:
 
   ```
-  spin fmt
+  lame fmt
   ```
 
 - To generate documentation from any Spin object:
 
   ```
-  spin doc
+  lame doc
   ```
 
 - To push and pull Spin objects to/from a remote repo:
 
   ```bash
   # upload an object to the repo
-  spin up
+  lame up
 
   # pull an object
-  spin down pst=1.0.0
+  lame down pst=1.0.0
   ```
+
+- To support multiple code generator backends (Propeller VM?)
 
 ### Finer Goals
 

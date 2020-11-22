@@ -1,0 +1,117 @@
+package token
+
+const (
+	// Keywords
+	// Blocks
+	CON = "CON"
+	DAT = "DAT"
+	OBJ = "OBJ"
+	PRI = "PRI"
+	PUB = "PUB"
+	VAR = "VAR"
+
+	// Constants
+	TRUE   = "TRUE"
+	FALSE  = "FALSE"
+	POSX   = "POSX"
+	NEGX   = "NEGX"
+	PI     = "PI"
+	RCFAST = "RCFAST"
+	RCSLOW = "RCSLOW"
+	XINPUT = "XINPUT"
+	XTAL1  = "XTAL1"
+	XTAL2  = "XTAL2"
+	XTAL3  = "XTAL3"
+	PLL1X  = "PLL1X"
+	PLL2X  = "PLL2X"
+	PLL4X  = "PLL4X"
+	PLL8X  = "PLL8X"
+	PLL16X = "PLL16X"
+
+	// Variables
+	RESULT = "RESULT"
+
+	// Flow Control
+	ABORT  = "ABORT"
+	CASE   = "CASE"
+	IF     = "IF"
+	IFNOT  = "IFNOT"
+	NEXT   = "NEXT"
+	QUIT   = "QUIT"
+	REPEAT = "REPEAT"
+	RETURN = "RETURN"
+
+	// Memory
+	BYTE      = "BYTE"
+	WORD      = "WORD"
+	LONG      = "LONG"
+	BYTEFILL  = "BYTEFILL"
+	WORDFILL  = "WORDFILL"
+	LONGFILL  = "LONGFILL"
+	BYTEMOVE  = "BYTEMOVE"
+	WORDMOVE  = "WORDMOVE"
+	LONGMOVE  = "LONGMOVE"
+	LOOKUP    = "LOOKUP"
+	LOOKUPZ   = "LOOKUPZ"
+	LOOKDOWN  = "LOOKDOWN"
+	LOOKDOWNZ = "LOOKDOWNZ"
+	STRSIZE   = "STRSIZE"
+	STRCOMP   = "STRCOMP"
+
+	// Directives
+	STRING   = "STRING"
+	CONSTANT = "CONSTANT"
+	FLOAT    = "FLOAT"
+	ROUND    = "ROUND"
+	TRUNC    = "TRUNC"
+	FILE     = "FILE"
+
+	// Locks
+	LOCKNEW = "LOCKNEW"
+	LOCKRET = "LOCKRET"
+	LOCKCLR = "LOCKCLR"
+	LOCKSET = "LOCKSET"
+
+	// Chip Config
+	CHIPVER   = "CHIPVER"
+	CLKMODE   = "CLKMODE"
+	CLKFREQ   = "CLKFREQ"
+	CLKSET    = "CLKSET"
+	P_CLKMODE = "_CLKMODE"
+	P_CLKFREQ = "_CLKFREQ"
+	P_XINFREQ = "_XINFREQ"
+	P_STACK   = "_STACK"
+	P_FREE    = "_FREE"
+
+	// Registers
+	CNT  = "CNT"
+	CTRA = "CTRA"
+	CTRB = "CTRB"
+	DIRA = "DIRA"
+	DIRB = "DIRB"
+	INA  = "INA"
+	INB  = "INB"
+	OUTA = "OUTA"
+	OUTB = "OUTB"
+	FRQA = "FRQA"
+	FRQB = "FRQB"
+	PHSA = "PHSA"
+	PHSB = "PHSB"
+	VCFG = "VCFG"
+	VSCL = "VSCL"
+	PAR  = "PAR"
+	SPR  = "SPR"
+
+	// Process Control
+	WAITCNT = "WAITCNT"
+	WAITPEQ = "WAITPEQ"
+	WAITPNE = "WAITPNE"
+	WAITVID = "WAITVID"
+
+	// Cog Control
+	COGID   = "COGID"
+	COGNEW  = "COGNEW"
+	COGINIT = "COGINIT"
+	COGSTOP = "COGSTOP"
+	REBOOT  = "REBOOT"
+)

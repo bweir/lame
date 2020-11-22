@@ -12,8 +12,8 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the version number of spin",
+	Short: "Print the version number of lame",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("spin tool 0.0.0")
+		fmt.Println("lame compiler suite 0.0.0")
 	},
 }

@@ -15,6 +15,6 @@ var docCmd = &cobra.Command{
 	Short: "Render object documentation",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("documenting ...")
+		fmt.Printf("documenting %s ...", args)
 	},
 }

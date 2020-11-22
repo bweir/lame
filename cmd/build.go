@@ -6,9 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"../lexer"
-
 	"github.com/spf13/cobra"
+
+	"github.com/bweir/lame/lexer"
+	"github.com/bweir/lame/token"
 )
 
 func init() {
@@ -30,14 +31,13 @@ var buildCmd = &cobra.Command{
 
 		scanner := lexer.NewScanner(strings.NewReader(string(text)))
 		// var print_now bool
-		var tok lexer.Token
-		var lit string
+		var tok token.Token
 
-		for tok != lexer.EOF {
-			tok, lit = scanner.Scan()
-			fmt.Println(tok, lit)
-			if tok == lexer.ILLEGAL {
-				fmt.Printf("Invalid token: %q\n", lit)
+		for tok.Type != token.EOF {
+			tok = scanner.Scan()
+			fmt.Printf("%s: '%s'\n", tok.Type, tok.Literal)
+			if tok.Type == token.ILLEGAL {
+				fmt.Printf("Invalid token: %s '%s'\n", tok.Type, tok.Literal)
 				os.Exit(1)
 			}
 			// if tok == PUB {

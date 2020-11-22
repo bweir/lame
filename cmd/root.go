@@ -8,8 +8,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "spin",
-	Short: "Spin language compiler",
+	Use:   "lame",
+	Short: "Lame language compiler",
 }
 
 func Execute() {
