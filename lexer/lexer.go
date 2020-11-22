@@ -115,16 +115,15 @@ func (s *Scanner) Scan() (tok token.Token) {
 			return s.makeToken(token.EOF, "")
 		} else if isNewline(ch) {
 			// fmt.Println("go newline", ch)
-			//s.lineStart = false
-			//} else if s.lineStart {
-			//	s.unread()
-			//	s.scanSpace()
-			// if s.state == state.FUNCTION {
-			// 	tok = s.scanIndentLevel()
-			// 	if tok.Type != token.NULL {
-			// 		return tok
-			// 	}
-			// }
+			s.lineStart = true
+		} else if s.lineStart {
+			s.unread()
+			if s.state == state.FUNCTION {
+				tok = s.scanIndentLevel()
+				if tok.Type != token.NULL {
+					return tok
+				}
+			}
 		} else if isSpace(ch) {
 			// fmt.Println("go space", ch)
 			s.unread()
