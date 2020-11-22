@@ -1,10 +1,13 @@
 package token
 
+import "github.com/bweir/lame/token/state"
+
 type Type string
 
 type Token struct {
 	Type    Type
 	Literal string
+	State   state.State
 	Line    int
 	Column  int
 }
@@ -14,7 +17,7 @@ const (
 	ILLEGAL = "ILLEGAL"
 
 	EOF     = "EOF"
-	WS      = "WS"
+	SPACE   = "SPACE"
 	NEWLINE = "NEWLINE" // \n
 
 	// Literals

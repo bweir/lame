@@ -114,4 +114,9 @@ const (
 	COGINIT = "COGINIT"
 	COGSTOP = "COGSTOP"
 	REBOOT  = "REBOOT"
+
+	// Logical
+	NOT = "NOT"
+	AND = "AND"
+	OR  = "OR"
 )

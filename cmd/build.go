@@ -30,14 +30,23 @@ var buildCmd = &cobra.Command{
 		}
 
 		scanner := lexer.NewScanner(strings.NewReader(string(text)))
-		// var print_now bool
 		var tok token.Token
 
 		for tok.Type != token.EOF {
 			tok = scanner.Scan()
-			fmt.Printf("%s: '%s'\n", tok.Type, tok.Literal)
+			if tok.Type == token.PRI || tok.Type == token.PUB {
+				fmt.Printf("\n")
+			}
+			fmt.Printf(
+				"%s %s(%d,%d): '%s'\n",
+				tok.State[0:2],
+				tok.Type,
+				tok.Line+1,
+				tok.Column+1,
+				tok.Literal,
+			)
 			if tok.Type == token.ILLEGAL {
-				fmt.Printf("Invalid token: %s '%s'\n", tok.Type, tok.Literal)
+				fmt.Printf("Invalid token '%s' encountered on line %d, col %d\n", tok.Literal, tok.Line, tok.Column)
 				os.Exit(1)
 			}
 			// if tok == PUB {
