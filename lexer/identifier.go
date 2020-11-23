@@ -99,6 +99,10 @@ func (s *Scanner) scanIdentifier() (tok token.Token) {
 		return s.makeToken(token.IF, buf.String())
 	case "IFNOT":
 		return s.makeToken(token.IFNOT, buf.String())
+	case "ELSEIF":
+		return s.makeToken(token.ELSEIF, buf.String())
+	case "ELSE":
+		return s.makeToken(token.ELSE, buf.String())
 	case "NEXT":
 		return s.makeToken(token.NEXT, buf.String())
 	case "QUIT":

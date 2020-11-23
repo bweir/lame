@@ -47,16 +47,15 @@ func isCommentEnd(ch rune) bool {
 }
 
 type Scanner struct {
-	r             *bufio.Reader
-	state         state.State
-	indent        *list.List
-	initialIndent int
-	blockStart    bool
-	lineStart     bool
-	line          int
-	column        int
-	lastChar      rune
-	lastColumn    int
+	r          *bufio.Reader
+	state      state.State
+	indent     *list.List
+	newIndent  int
+	blockStart bool
+	line       int
+	column     int
+	lastChar   rune
+	lastColumn int
 }
 
 func NewScanner(r io.Reader) *Scanner {
@@ -110,36 +109,37 @@ func (s *Scanner) makeToken(tok token.Type, lit string) token.Token {
 
 func (s *Scanner) Scan() (tok token.Token) {
 	ch := s.read()
+	currentIndent := 0
+	if s.indent.Len() > 0 {
+		currentIndent = s.indent.Back().Value.(int)
+	}
 	for {
 		if ch == eof {
 			return s.makeToken(token.EOF, "")
 		} else if isNewline(ch) {
-			// fmt.Println("go newline", ch)
-			s.lineStart = true
-		} else if s.lineStart {
-			s.unread()
 			if s.state == state.FUNCTION {
-				tok = s.scanIndentLevel()
-				if tok.Type != token.NULL {
+				if tok := s.readIndent(); tok.Type != token.NULL {
 					return tok
 				}
 			}
-		} else if isSpace(ch) {
-			// fmt.Println("go space", ch)
+		} else if s.newIndent > currentIndent {
 			s.unread()
-			if tok := s.scanSpace(); tok.Type == token.EOF {
+			return s.scanIndent()
+		} else if s.newIndent < currentIndent {
+			s.unread()
+			return s.scanDedent()
+		} else if isSpace(ch) {
+			s.unread()
+			if tok := s.scanSpace(); tok.Type != token.NULL {
 				return tok
 			}
 		} else if isIdentifier(ch) {
-			// fmt.Println("go identifier", ch)
 			s.unread()
 			return s.scanIdentifier()
 		} else if isDigit(ch) {
-			// fmt.Println("go digit", ch)
 			s.unread()
 			return s.scanNumber()
 		} else if isLineCommentStart(ch) {
-			// fmt.Println("go line comment", ch)
 			ch = s.read()
 			if ch == eof {
 				return s.makeToken(token.EOF, "")
@@ -150,7 +150,6 @@ func (s *Scanner) Scan() (tok token.Token) {
 				return s.scanLineComment()
 			}
 		} else if isCommentStart(ch) {
-			// fmt.Println("go comment", ch)
 			ch = s.read()
 			if ch == eof {
 				return s.makeToken(token.EOF, "")
@@ -161,7 +160,6 @@ func (s *Scanner) Scan() (tok token.Token) {
 				return s.scanComment()
 			}
 		} else {
-			// fmt.Println("go operator", ch)
 			s.unread()
 			return s.scanOperator()
 		}
@@ -184,7 +182,7 @@ func (s *Scanner) scanSpace() (tok token.Token) {
 		}
 	}
 
-	return s.makeToken(token.NULL, buf.String())
+	return s.makeToken(token.NULL, "")
 }
 
 func (s *Scanner) scanNumber() (tok token.Token) {

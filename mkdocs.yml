@@ -1,0 +1,26 @@
+site_name: lame
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: blue
+  icon:
+    logo: fontawesome/solid/gamepad
+  features:
+    - navigation.instant
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bweir/lame
+
+nav:
+  - Home: index.md
+  - Language:
+      - Types: types.md
+      - Blocks: blocks.md
+      - Operators: operators.md
+      - Keywords: keywords.md
+      - Whitespace: whitespace.md
+      - Comments: comments.md

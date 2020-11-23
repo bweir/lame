@@ -36,6 +36,8 @@ const (
 	CASE   = "CASE"
 	IF     = "IF"
 	IFNOT  = "IFNOT"
+	ELSEIF = "ELSEIF"
+	ELSE   = "ELSE"
 	NEXT   = "NEXT"
 	QUIT   = "QUIT"
 	REPEAT = "REPEAT"
