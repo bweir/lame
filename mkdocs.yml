@@ -1,4 +1,8 @@
-site_name: lame
+site_name: Lame
+site_description: A language for making lame games
+
+repo_name: bweir/lame
+repo_url: https://github.com/bweir/lame
 
 theme:
   name: material
@@ -17,6 +21,8 @@ extra:
 
 nav:
   - Home: index.md
+  - Getting Started:
+      - Installation: installation.md
   - Language:
       - Types: types.md
       - Blocks: blocks.md
