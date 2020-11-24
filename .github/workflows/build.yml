@@ -33,9 +33,9 @@ jobs:
           CGO_ENABLED: "0"
         run: |
           go build .
-          zip -9 lame-${BRANCH}-${COMMIT}-${GOOS}-${GOARCH}.zip lame{,.exe}
+          zip -9 lame-${{ env.BRANCH }}-${{ env.COMMIT }}-${{ env.GOOS} }-${{ env.GOARCH }}.zip lame{,.exe}
 
       - uses: actions/upload-artifact@v2
         with:
-          name: "lame-${REF}-${GOOS}-${GOARCH}"
+          name: "lame-${{ env.REF }}-${{ env.GOOS }}-${{ env.GOARCH }}"
           path: "*.zip"
