@@ -23,7 +23,7 @@ jobs:
           echo "GOOS=$(dirname ${{ matrix.dist }})" >> $GITHUB_ENV
           echo "GOARCH=$(basename ${{ matrix.dist }})" >> $GITHUB_ENV
           echo "COMMIT=$(echo "$GITHUB_SHA" | cut -c -8)" >> $GITHUB_ENV
-          echo "BRANCH=$(basename "$GITHUB_REF")" >> $GITHUB_ENV
+          echo "REF=$(basename "$GITHUB_REF")" >> $GITHUB_ENV
 
       - uses: actions/setup-go@v2
         with:
@@ -33,7 +33,7 @@ jobs:
           CGO_ENABLED: "0"
         run: |
           go build .
-          zip -9 lame-${{ env.BRANCH }}-${{ env.COMMIT }}-${{ env.GOOS }}-${{ env.GOARCH }}.zip lame{,.exe}
+          zip -9 lame-${{ env.REF }}-${{ env.COMMIT }}-${{ env.GOOS }}-${{ env.GOARCH }}.zip lame{,.exe}
 
       - uses: actions/upload-artifact@v2
         with:
