@@ -9,13 +9,11 @@ jobs:
       matrix:
         dist:
           - "darwin/amd64"
-          - "darwin/arm64"
           - "linux/386"
           - "linux/amd64"
           - "linux/arm"
-          - "linux/386"
-          - "linux/amd64"
-          - "linux/arm"
+          - "windows/386"
+          - "windows/amd64"
         go: ["1.15"]
     name: "${{ matrix.dist }}"
     steps:
