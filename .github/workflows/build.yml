@@ -36,5 +36,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: "lame-${{ env.REF }}-${{ env.GOOS }}-${{ env.GOARCH }}"
+          name: "${{ env.GOOS }}-${{ env.GOARCH }}"
           path: "*.zip"
