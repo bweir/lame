@@ -1,0 +1,41 @@
+---
+name: Build
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        dist:
+          - "darwin/amd64"
+          - "darwin/arm64"
+          - "linux/386"
+          - "linux/amd64"
+          - "linux/arm"
+          - "linux/386"
+          - "linux/amd64"
+          - "linux/arm"
+        go: ["1.15"]
+    name: Go ${{ matrix.go }} sample
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - env:
+          CGO_ENABLED: "0"
+        run: |
+          export GOOS=$(dirname ${{ matrix.dist }})
+          export GOARCH=$(basename ${{ matrix.dist }})
+          export COMMIT=$(echo "$GITHUB_SHA" | cut -c -8)
+          export BRANCH=$(basename "$GITHUB_REF")
+          go build .
+          zip -9 lame-${BRANCH}-${COMMIT}-${GOOS}-${GOARCH}.zip lame{,.exe}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: "${{ matrix.dist }}"
+          path: "*.zip"
