@@ -21,6 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - run:
+          echo "::set-env name=GOOS::$(dirname ${{ matrix.dist }})"
+          echo "::set-env name=GOARCH::$(basename ${{ matrix.dist }})"
+          echo "::set-env name=COMMIT::$(echo "$GITHUB_SHA" | cut -c -8)"
+          echo "::set-env name=BRANCH::$(basename "$GITHUB_REF")"
+
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go }}
@@ -28,14 +34,10 @@ jobs:
       - env:
           CGO_ENABLED: "0"
         run: |
-          export GOOS=$(dirname ${{ matrix.dist }})
-          export GOARCH=$(basename ${{ matrix.dist }})
-          export COMMIT=$(echo "$GITHUB_SHA" | cut -c -8)
-          export BRANCH=$(basename "$GITHUB_REF")
           go build .
           zip -9 lame-${BRANCH}-${COMMIT}-${GOOS}-${GOARCH}.zip lame{,.exe}
 
       - uses: actions/upload-artifact@v2
         with:
-          name: "${{ matrix.dist }}"
+          name: "lame-${REF}-${GOOS}-${GOARCH}"
           path: "*.zip"
