@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run:
+      - run: |
           echo "::set-env name=GOOS::$(dirname ${{ matrix.dist }})"
           echo "::set-env name=GOARCH::$(basename ${{ matrix.dist }})"
           echo "::set-env name=COMMIT::$(echo "$GITHUB_SHA" | cut -c -8)"
