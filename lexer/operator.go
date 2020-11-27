@@ -24,8 +24,6 @@ func (s *Scanner) scanOperator() (tok token.Token) {
 
 	case ':':
 		return s.makeToken(token.COLON, string(ch))
-	case '"':
-		return s.makeToken(token.QUOTE_DOUBLE, string(ch))
 	case '.':
 		return s.makeToken(token.DOT, string(ch))
 	case '|':

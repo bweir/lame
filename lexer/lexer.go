@@ -138,7 +138,9 @@ func (s *Scanner) Scan() (tok token.Token) {
 			return s.scanIdentifier()
 		} else if isDigit(ch) {
 			s.unread()
-			return s.scanNumber()
+			return s.scanDecimalNumber()
+		} else if ch == '"' {
+			return s.scanString()
 		} else if isLineCommentStart(ch) {
 			ch = s.read()
 			if ch == eof {
@@ -183,22 +185,4 @@ func (s *Scanner) scanSpace() (tok token.Token) {
 	}
 
 	return s.makeToken(token.NULL, "")
-}
-
-func (s *Scanner) scanNumber() (tok token.Token) {
-	var buf bytes.Buffer
-	buf.WriteRune(s.read())
-
-	for {
-		if ch := s.read(); ch == eof {
-			break
-		} else if !isDigit(ch) && ch != '_' {
-			s.unread()
-			break
-		} else {
-			_, _ = buf.WriteRune(ch)
-		}
-	}
-
-	return s.makeToken(token.NUMBER, buf.String())
 }

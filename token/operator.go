@@ -29,8 +29,6 @@ const (
 	PAREN_OPEN    = "PAREN_OPEN"    // (
 	PAREN_CLOSE   = "PAREN_CLOSE"   // )
 	COLON         = "COLON"         // :
-	QUOTE_DOUBLE  = "QUOTE_DOUBLE"  // "
-	QUOTE_SINGLE  = "QUOTE_SINGLE"  // '
 	BRACE_OPEN    = "BRACE_OPEN"    // {
 	BRACE_CLOSE   = "BRACE_CLOSE"   // }
 )

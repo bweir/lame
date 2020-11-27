@@ -12,7 +12,11 @@ theme:
   icon:
     logo: fontawesome/solid/gamepad
   features:
-    - navigation.instant
+    # - navigation.instant
+    - navigation.tabs
+
+markdown_extensions:
+  - pymdownx.tasklist
 
 extra:
   social:
@@ -30,3 +34,5 @@ nav:
       - Keywords: keywords.md
       - Whitespace: whitespace.md
       - Comments: comments.md
+  - Development:
+      - Features: features.md
