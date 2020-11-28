@@ -117,6 +117,8 @@ func (s *Scanner) Scan() (tok token.Token) {
 			return s.makeToken(token.LESS_THAN_EQUAL_TO, "<=")
 		} else if ch == '<' {
 			return s.makeToken(token.BITWISE_SHIFT_LEFT, "<<")
+		} else if ch == '-' {
+			return s.makeToken(token.BITWISE_ROTATE_LEFT, "<-")
 		} else {
 			s.unread()
 			return s.makeToken(token.LESS_THAN, "<")
@@ -127,6 +129,8 @@ func (s *Scanner) Scan() (tok token.Token) {
 			return s.makeToken(token.GREATER_THAN_EQUAL_TO, ">=")
 		} else if ch == '>' {
 			return s.makeToken(token.BITWISE_SHIFT_RIGHT, ">>")
+		} else if ch == '<' {
+			return s.makeToken(token.BITWISE_REVERSE, "><")
 		} else {
 			s.unread()
 			return s.makeToken(token.GREATER_THAN, ">")
@@ -135,9 +139,11 @@ func (s *Scanner) Scan() (tok token.Token) {
 	} else if ch == '~' {
 		if ch = s.read(); ch == '>' {
 			return s.makeToken(token.BITWISE_SIGNED_SHIFT_RIGHT, "~>")
+		} else if ch == '~' {
+			return s.makeToken(token.BITWISE_SIGN_EXTEND_15, "~~")
 		} else {
 			s.unread()
-			return s.makeToken(token.ILLEGAL, "~")
+			return s.makeToken(token.BITWISE_SIGN_EXTEND_7, "~")
 		}
 
 	} else if ch == '+' {
@@ -151,6 +157,8 @@ func (s *Scanner) Scan() (tok token.Token) {
 	} else if ch == '-' {
 		if ch = s.read(); ch == '=' {
 			return s.makeToken(token.SUBTRACT_ASSIGN, "-=")
+		} else if ch == '>' {
+			return s.makeToken(token.BITWISE_ROTATE_RIGHT, "->")
 		} else {
 			s.unread()
 			return s.makeToken(token.SUBTRACT, "-")

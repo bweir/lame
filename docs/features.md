@@ -54,6 +54,8 @@
 - [x] `<<` - bitwise shift left
 - [x] `>>` - bitwise shift right
 - [x] `~>` - bitwise signed shift right
+- [x] `~` - bitwise sign extend 7
+- [x] `~~` - bitwise sign extend 15
 - [ ] `@` - address
 
 ## Strings

@@ -45,9 +45,13 @@ func TestScanner_Scan(t *testing.T) {
 
 		{src: `<<`, Type: token.BITWISE_SHIFT_LEFT, Literal: `<<`},
 		{src: `>>`, Type: token.BITWISE_SHIFT_RIGHT, Literal: `>>`},
+		{src: `<-`, Type: token.BITWISE_ROTATE_LEFT, Literal: `<-`},
+		{src: `->`, Type: token.BITWISE_ROTATE_RIGHT, Literal: `->`},
+		{src: `><`, Type: token.BITWISE_REVERSE, Literal: `><`},
 		{src: `~>`, Type: token.BITWISE_SIGNED_SHIFT_RIGHT, Literal: `~>`},
 
-		{src: `~`, Type: token.ILLEGAL, Literal: `~`},
+		{src: `~`, Type: token.BITWISE_SIGN_EXTEND_7, Literal: `~`},
+		{src: `~~`, Type: token.BITWISE_SIGN_EXTEND_15, Literal: `~~`},
 
 		// Comparison
 		{src: `=`, Type: token.ASSIGN, Literal: `=`},

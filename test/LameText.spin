@@ -86,7 +86,7 @@ PUB Dec(value, x, y) | i, d
         if value => i
             Char(value / i + "0" + d*(i == 1), x, y)
             x += tile_w
-            value //= i
+            value %= i
             result~~
         elseif result or i == 1
             Char("0", x, y)
