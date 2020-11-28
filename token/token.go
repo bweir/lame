@@ -14,10 +14,12 @@ type Token struct {
 
 const (
 	// Special tokens
-	NULL   = "NULL"   // do no action
-	EOF    = "EOF"    // end of file
-	INDENT = "INDENT" // mark indent
-	DEDENT = "DEDENT" // mark dedent
+	NULL    = "NULL"    // do no action
+	EOF     = "EOF"     // end of file
+	SPACE   = "SPACE"   // space in between tokens
+	NEWLINE = "NEWLINE" // newline character
+	INDENT  = "INDENT"  // mark indent
+	DEDENT  = "DEDENT"  // mark dedent
 
 	// Literals
 	IDENTIFIER = "IDENTIFIER" // fields, table_name

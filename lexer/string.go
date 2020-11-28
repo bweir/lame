@@ -25,7 +25,7 @@ func (s *Scanner) scanString() (tok token.Token) {
 				_, _ = buf.WriteRune('\t')
 			} else if ch == '"' {
 				_, _ = buf.WriteRune('"')
-			} else if isDigit(ch) {
+			} else if isDecimalDigit(ch) {
 				s.unread()
 				tok := s.scanDecimalNumber()
 				num, _ := strconv.Atoi(tok.Literal)

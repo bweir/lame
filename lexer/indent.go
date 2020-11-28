@@ -15,12 +15,12 @@ func printList(li *list.List) {
 	fmt.Printf("\n")
 }
 
-func (s *Scanner) readIndent() (tok token.Token) {
+func (s *Scanner) readIndent() {
 	var buf bytes.Buffer
 
 	for {
 		if ch := s.read(); ch == eof {
-			return s.makeToken(token.EOF, "")
+			break
 		} else if !isSpace(ch) {
 			s.unread()
 			break
@@ -30,11 +30,9 @@ func (s *Scanner) readIndent() (tok token.Token) {
 	}
 
 	s.newIndent = buf.Len()
-
 	if s.blockStart {
 		s.blockStart = false
 	}
-	return s.makeToken(token.NULL, "")
 }
 
 func (s *Scanner) scanIndent() (tok token.Token) {

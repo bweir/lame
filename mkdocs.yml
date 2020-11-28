@@ -16,7 +16,8 @@ theme:
     - navigation.tabs
 
 markdown_extensions:
-  - pymdownx.tasklist
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 extra:
   social:

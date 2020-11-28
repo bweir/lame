@@ -15,7 +15,7 @@ func (s *Scanner) scanIdentifier() (tok token.Token) {
 	for {
 		if ch := s.read(); ch == eof {
 			break
-		} else if !isIdentifier(ch) && !isDigit(ch) {
+		} else if !isIdentifier(ch) && !isDecimalDigit(ch) {
 			s.unread()
 			break
 		} else {
@@ -73,6 +73,16 @@ func (s *Scanner) scanIdentifier() (tok token.Token) {
 		return s.makeToken(token.QUIT, buf.String())
 	case "REPEAT":
 		return s.makeToken(token.REPEAT, buf.String())
+	case "FROM":
+		return s.makeToken(token.FROM, buf.String())
+	case "TO":
+		return s.makeToken(token.TO, buf.String())
+	case "STEP":
+		return s.makeToken(token.STEP, buf.String())
+	case "WHILE":
+		return s.makeToken(token.WHILE, buf.String())
+	case "UNTIL":
+		return s.makeToken(token.UNTIL, buf.String())
 	case "RETURN":
 		return s.makeToken(token.RETURN, buf.String())
 
@@ -83,26 +93,6 @@ func (s *Scanner) scanIdentifier() (tok token.Token) {
 		return s.makeToken(token.WORD, buf.String())
 	case "LONG":
 		return s.makeToken(token.LONG, buf.String())
-	case "BYTEFILL":
-		return s.makeToken(token.BYTEFILL, buf.String())
-	case "WORDFILL":
-		return s.makeToken(token.WORDFILL, buf.String())
-	case "LONGFILL":
-		return s.makeToken(token.LONGFILL, buf.String())
-	case "BYTEMOVE":
-		return s.makeToken(token.BYTEMOVE, buf.String())
-	case "WORDMOVE":
-		return s.makeToken(token.WORDMOVE, buf.String())
-	case "LONGMOVE":
-		return s.makeToken(token.LONGMOVE, buf.String())
-	case "LOOKUP":
-		return s.makeToken(token.LOOKUP, buf.String())
-	case "LOOKUPZ":
-		return s.makeToken(token.LOOKUPZ, buf.String())
-	case "LOOKDOWN":
-		return s.makeToken(token.LOOKDOWN, buf.String())
-	case "LOOKDOWNZ":
-		return s.makeToken(token.LOOKDOWNZ, buf.String())
 
 	// logical
 	case "NOT":

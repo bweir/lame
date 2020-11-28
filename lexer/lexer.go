@@ -1,3 +1,6 @@
+// A lexer implementation of Lame.
+//
+// 		Hello
 package lexer
 
 import (
@@ -13,38 +16,6 @@ import (
 type State int
 
 var eof = rune(0)
-
-func isSpace(ch rune) bool {
-	return ch == ' ' || ch == '\t'
-}
-
-func isNewline(ch rune) bool {
-	return ch == '\n'
-}
-
-func isIdentifier(ch rune) bool {
-	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
-}
-
-func isDigit(ch rune) bool {
-	return (ch >= '0' && ch <= '9')
-}
-
-func isLineCommentStart(ch rune) bool {
-	return ch == '\''
-}
-
-func isLineCommentEnd(ch rune) bool {
-	return ch == '\n'
-}
-
-func isCommentStart(ch rune) bool {
-	return ch == '{'
-}
-
-func isCommentEnd(ch rune) bool {
-	return ch == '}'
-}
 
 type Scanner struct {
 	r          *bufio.Reader
@@ -108,64 +79,176 @@ func (s *Scanner) makeToken(tok token.Type, lit string) token.Token {
 }
 
 func (s *Scanner) Scan() (tok token.Token) {
-	ch := s.read()
 	currentIndent := 0
 	if s.indent.Len() > 0 {
 		currentIndent = s.indent.Back().Value.(int)
 	}
-	for {
-		if ch == eof {
-			return s.makeToken(token.EOF, "")
-		} else if isNewline(ch) {
-			if s.state == state.FUNCTION {
-				if tok := s.readIndent(); tok.Type != token.NULL {
-					return tok
-				}
-			}
-		} else if s.newIndent > currentIndent {
-			s.unread()
-			return s.scanIndent()
-		} else if s.newIndent < currentIndent {
-			s.unread()
-			return s.scanDedent()
-		} else if isSpace(ch) {
-			s.unread()
-			if tok := s.scanSpace(); tok.Type != token.NULL {
-				return tok
-			}
-		} else if isIdentifier(ch) {
-			s.unread()
-			return s.scanIdentifier()
-		} else if isDigit(ch) {
-			s.unread()
-			return s.scanDecimalNumber()
-		} else if ch == '"' {
-			return s.scanString()
-		} else if isLineCommentStart(ch) {
-			ch = s.read()
-			if ch == eof {
-				return s.makeToken(token.EOF, "")
-			} else if isLineCommentStart(ch) {
-				return s.scanLineDocComment()
-			} else {
-				s.unread()
-				return s.scanLineComment()
-			}
-		} else if isCommentStart(ch) {
-			ch = s.read()
-			if ch == eof {
-				return s.makeToken(token.EOF, "")
-			} else if isCommentStart(ch) {
-				return s.scanDocComment()
-			} else {
-				s.unread()
-				return s.scanComment()
-			}
+
+	if ch := s.read(); ch == eof {
+		return s.makeToken(token.EOF, "")
+	} else if isNewline(ch) {
+		if s.state == state.FUNCTION {
+			s.readIndent()
+		}
+		return s.makeToken(token.NEWLINE, string(ch))
+	} else if s.newIndent > currentIndent {
+		s.unread()
+		return s.scanIndent()
+	} else if s.newIndent < currentIndent {
+		s.unread()
+		return s.scanDedent()
+	} else if isSpace(ch) {
+		s.unread()
+		return s.scanSpace()
+	} else if isIdentifier(ch) {
+		s.unread()
+		return s.scanIdentifier()
+
+	} else if ch == '=' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.EQUAL_TO, "==")
 		} else {
 			s.unread()
-			return s.scanOperator()
+			return s.makeToken(token.ASSIGN, "=")
 		}
+
+	} else if ch == '<' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.LESS_THAN_EQUAL_TO, "<=")
+		} else if ch == '<' {
+			return s.makeToken(token.BITWISE_SHIFT_LEFT, "<<")
+		} else {
+			s.unread()
+			return s.makeToken(token.LESS_THAN, "<")
+		}
+
+	} else if ch == '>' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.GREATER_THAN_EQUAL_TO, ">=")
+		} else if ch == '>' {
+			return s.makeToken(token.BITWISE_SHIFT_RIGHT, ">>")
+		} else {
+			s.unread()
+			return s.makeToken(token.GREATER_THAN, ">")
+		}
+
+	} else if ch == '~' {
+		if ch = s.read(); ch == '>' {
+			return s.makeToken(token.BITWISE_SIGNED_SHIFT_RIGHT, "~>")
+		} else {
+			s.unread()
+			return s.makeToken(token.ILLEGAL, "~")
+		}
+
+	} else if ch == '+' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.ADD_ASSIGN, "+=")
+		} else {
+			s.unread()
+			return s.makeToken(token.ADD, "+")
+		}
+
+	} else if ch == '-' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.SUBTRACT_ASSIGN, "-=")
+		} else {
+			s.unread()
+			return s.makeToken(token.SUBTRACT, "-")
+		}
+
+	} else if ch == '*' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.MULTIPLY_ASSIGN, "*=")
+		} else {
+			s.unread()
+			return s.makeToken(token.MULTIPLY, "*")
+		}
+
+	} else if ch == '/' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.DIVIDE_ASSIGN, "/=")
+		} else {
+			s.unread()
+			return s.makeToken(token.DIVIDE, "/")
+		}
+
+	} else if ch == '%' {
+		if ch = s.read(); ch == '%' {
+			return s.scanQuaternaryNumber()
+		} else if ch == '=' {
+			return s.makeToken(token.MODULO_ASSIGN, "%=")
+		} else if !isBinaryDigit(ch) {
+			s.unread()
+			return s.makeToken(token.MODULO, "%")
+		} else {
+			s.unread()
+			return s.scanBinaryNumber()
+		}
+
+	} else if ch == '&' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.BITWISE_AND_ASSIGN, "&=")
+		} else {
+			s.unread()
+			return s.makeToken(token.BITWISE_AND, "&")
+		}
+
+	} else if ch == '|' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.BITWISE_OR_ASSIGN, "|=")
+		} else {
+			s.unread()
+			return s.makeToken(token.BITWISE_OR, "|")
+		}
+
+	} else if ch == '^' {
+		if ch = s.read(); ch == '=' {
+			return s.makeToken(token.BITWISE_XOR_ASSIGN, "^=")
+		} else {
+			s.unread()
+			return s.makeToken(token.BITWISE_XOR, "^")
+		}
+
+	} else if isDecimalDigit(ch) {
+		s.unread()
+		return s.scanDecimalNumber()
+	} else if ch == '$' {
+		return s.scanHexadecimalNumber()
+
+	} else if ch == '"' {
+		return s.scanString()
+
+	} else if ch == '.' {
+		if ch = s.read(); ch == '.' {
+			return s.makeToken(token.RANGE, "..")
+		} else {
+			s.unread()
+			return s.makeToken(token.DOT, ".")
+		}
+
+	} else if isLineCommentStart(ch) {
 		ch = s.read()
+		if ch == eof {
+			return s.makeToken(token.EOF, "")
+		} else if isLineCommentStart(ch) {
+			return s.scanLineDocComment()
+		} else {
+			s.unread()
+			return s.scanLineComment()
+		}
+	} else if isCommentStart(ch) {
+		ch = s.read()
+		if ch == eof {
+			return s.makeToken(token.EOF, "")
+		} else if isCommentStart(ch) {
+			return s.scanDocComment()
+		} else {
+			s.unread()
+			return s.scanComment()
+		}
+	} else {
+		s.unread()
+		return s.scanOperator()
 	}
 }
 
@@ -175,7 +258,7 @@ func (s *Scanner) scanSpace() (tok token.Token) {
 
 	for {
 		if ch := s.read(); ch == eof {
-			return s.makeToken(token.EOF, "")
+			break
 		} else if !isSpace(ch) {
 			s.unread()
 			break
@@ -184,5 +267,5 @@ func (s *Scanner) scanSpace() (tok token.Token) {
 		}
 	}
 
-	return s.makeToken(token.NULL, "")
+	return s.makeToken(token.SPACE, buf.String())
 }

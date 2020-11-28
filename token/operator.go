@@ -2,25 +2,43 @@ package token
 
 const (
 	// Operators
-	EQUAL            = "EQUAL"            // =
-	EXCLAMATION_MARK = "EXCLAMATION_MARK" // !
-	AT               = "AT"               // @
-	POUND            = "POUND"            // #
-	DOLLAR           = "DOLLAR"           // $
-	PERCENT          = "PERCENT"          // %
-	DOT              = "DOT"              // .
-	RANGE            = "RANGE"            // ..
-	PIPE             = "PIPE"             // |
+	ADD      = "ADD"      // +
+	SUBTRACT = "SUBTRACT" // -
+	MULTIPLY = "MULTIPLY" // *
+	DIVIDE   = "DIVIDE"   // /
+	MODULO   = "MODULO"   // %
+	ASSIGN   = "ASSIGN"   // =
 
-	LESS_THAN    = "LESS_THAN"    // <
-	GREATER_THAN = "GREATER_THAN" // >
-	TILDE        = "TILDE"        // ~
-	AMPERSAND    = "AMPERSAND"    // &
+	ADD_ASSIGN      = "ADD_ASSIGN"      // +=
+	SUBTRACT_ASSIGN = "SUBTRACT_ASSIGN" // -=
+	MULTIPLY_ASSIGN = "MULTIPLY_ASSIGN" // *=
+	DIVIDE_ASSIGN   = "DIVIDE_ASSIGN"   // /=
+	MODULO_ASSIGN   = "MODULO_ASSIGN"   // /=
 
-	PLUS     = "PLUS"     // +
-	MINUS    = "MINUS"    // -
-	ASTERISK = "ASTERISK" // *
-	SLASH    = "SLASH"    // /
+	AT    = "AT"    // @
+	POUND = "POUND" // #
+
+	DOT   = "DOT"   // .
+	RANGE = "RANGE" // ..
+	PIPE  = "PIPE"  // |
+
+	EQUAL_TO              = "EQUAL_TO"              // ==
+	LESS_THAN             = "LESS_THAN"             // <
+	GREATER_THAN          = "GREATER_THAN"          // >
+	LESS_THAN_EQUAL_TO    = "LESS_THAN_EQUAL_TO"    // <=
+	GREATER_THAN_EQUAL_TO = "GREATER_THAN_EQUAL_TO" // >=
+
+	BITWISE_AND        = "BITWISE_AND"        // &
+	BITWISE_AND_ASSIGN = "BITWISE_AND_ASSIGN" // &=
+	BITWISE_OR         = "BITWISE_OR"         // |
+	BITWISE_OR_ASSIGN  = "BITWISE_OR_ASSIGN"  // |=
+	BITWISE_XOR        = "BITWISE_XOR"        // ^
+	BITWISE_XOR_ASSIGN = "BITWISE_XOR_ASSIGN" // ^=
+	BITWISE_NOT        = "BITWISE_NOT"        // !
+
+	BITWISE_SHIFT_LEFT         = "BITWISE_SHIFT_LEFT"         // <<
+	BITWISE_SHIFT_RIGHT        = "BITWISE_SHIFT_RIGHT"        // >>
+	BITWISE_SIGNED_SHIFT_RIGHT = "BITWISE_SIGNED_SHIFT_RIGHT" // ~>
 
 	// Misc characters
 	BRACKET_OPEN  = "BRACKET_OPEN"  // [

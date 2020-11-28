@@ -47,8 +47,8 @@ var tokensCmd = &cobra.Command{
 				indent--
 			}
 			fmt.Printf(
-				"%s %12s(%3d, %3d): %s'%s'\n",
-				tok.State[0:2],
+				"%-3s %-16s (%4d, %4d): %s'%s'\n",
+				tok.State[0:3],
 				tok.Type,
 				tok.Line+1,
 				tok.Column+1,
