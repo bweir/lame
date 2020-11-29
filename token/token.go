@@ -4,6 +4,8 @@ import "github.com/bweir/lame/token/state"
 
 type Type string
 
+type Pos int
+
 type Token struct {
 	Type    Type
 	Literal string

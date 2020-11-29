@@ -9,12 +9,14 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/bweir/lame/lexer"
+	"github.com/bweir/lame/parser"
 	"github.com/bweir/lame/token"
 )
 
 func init() {
 	rootCmd.AddCommand(dumpCmd)
 	dumpCmd.AddCommand(tokensCmd)
+	dumpCmd.AddCommand(astCmd)
 }
 
 var dumpCmd = &cobra.Command{
@@ -47,7 +49,7 @@ var tokensCmd = &cobra.Command{
 				indent--
 			}
 			fmt.Printf(
-				"%-3s %-16s (%4d, %4d): %s'%s'\n",
+				"%-3s %-20s (%4d, %4d): %s'%s'\n",
 				tok.State[0:3],
 				tok.Type,
 				tok.Line+1,
@@ -63,5 +65,28 @@ var tokensCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+	},
+}
+
+var astCmd = &cobra.Command{
+	Use:   "ast",
+	Short: "Dump AST.",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		text, err := ioutil.ReadFile(args[0])
+		if err != nil {
+			fmt.Println("File reading error", err)
+			return
+		}
+
+		parser := parser.NewParser(strings.NewReader(string(text)))
+		object, err := parser.Parse()
+
+		if err != nil {
+			fmt.Println("Something happen", err)
+			return
+		}
+
+		fmt.Printf("victory %q", object)
 	},
 }
